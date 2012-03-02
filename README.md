@@ -8,7 +8,7 @@ Requirements
 
 To use _xbmcvc_, the following libraries need to be installed on your system:
 
-* _pocketsphinx_ along with its prerequisite, _sphinxbase_ (http://cmusphinx.sourceforge.net/wiki/download/)
+* _pocketsphinx_ along with its prerequisite, _sphinxbase_ (http://cmusphinx.sourceforge.net/wiki/download/) Note: you should use the version from the sourceforge page. In ubuntu at least, the version in the repository is out of date and will not work with xbmcvc.
 * _libcurl_ (shipped with cURL, should be present on most systems; if that's not your case, go to http://curl.haxx.se/libcurl/)
 
 For _xbmcvc_ to work, you need an XBMC version which supports JSON-RPC API version 3 or higher, which means any pre-11.0 (pre-Eden) or newer version should work. Older releases (including Dharma) are not supported.

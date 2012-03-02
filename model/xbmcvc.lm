@@ -10,9 +10,9 @@ The (fixed) discount mass is 0.5. The backoffs are computed using the ratio meth
 This model based on a corpus of 14 sentences and 16 words
 
 \data\
-ngram 1=16
-ngram 2=28
-ngram 3=14
+ngram 1=17
+ngram 2=30
+ngram 3=15
 
 \1-grams:
 -0.7782 </s> -0.3010
@@ -31,6 +31,7 @@ ngram 3=14
 -1.9243 STOP -0.2218
 -1.9243 UNMUTE -0.2218
 -1.9243 UP -0.2218
+-1.9243 LISTEN -0.2218
 
 \2-grams:
 -1.4472 <s> BACK 0.0000
@@ -47,6 +48,7 @@ ngram 3=14
 -1.4472 <s> STOP 0.0000
 -1.4472 <s> UNMUTE 0.0000
 -1.4472 <s> UP 0.0000
+-1.4472 <s> LISTEN 0.0000
 -0.3010 BACK </s> -0.3010
 -0.3010 DOWN </s> -0.3010
 -0.3010 HOME </s> -0.3010
@@ -61,6 +63,7 @@ ngram 3=14
 -0.3010 STOP </s> -0.3010
 -0.3010 UNMUTE </s> -0.3010
 -0.3010 UP </s> -0.3010
+-0.3010 LISTEN </s> -0.3010
 
 \3-grams:
 -0.3010 <s> BACK </s>
@@ -77,5 +80,6 @@ ngram 3=14
 -0.3010 <s> STOP </s>
 -0.3010 <s> UNMUTE </s>
 -0.3010 <s> UP </s>
+-0.3010 <s> LISTEN </s>
 
 \end\

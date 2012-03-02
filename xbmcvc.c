@@ -150,7 +150,7 @@ send_json_rpc_request(const char *method, const char *params, char **dst)
 }
 
 void
-perform_actions(const char *hyp)
+perform_actions(const char *hyp, time_t *start, int *listening)
 {
 
 	int	i = 0;
@@ -204,33 +204,38 @@ perform_actions(const char *hyp)
 			memcpy(action_string, hyp + ls, len - 1);
 
 			/* Set method and parameters based on word */
-			     if (strcmp(action_string, "BACK") == 0)	{ method = "Input.Back"; }
-			else if (strcmp(action_string, "DOWN") == 0)	{ method = "Input.Down"; }
-			else if (strcmp(action_string, "HOME") == 0)	{ method = "Input.Home"; }
-			else if (strcmp(action_string, "LEFT") == 0)	{ method = "Input.Left"; }
-			else if (strcmp(action_string, "MUTE") == 0)	{ method = "Application.SetMute"; params = strdup("\"mute\": true"); }
-			else if (strcmp(action_string, "RIGHT") == 0)	{ method = "Input.Right"; }
-			else if (strcmp(action_string, "SELECT") == 0)	{ method = "Input.Select"; }
-			else if (strcmp(action_string, "UNMUTE") == 0)	{ method = "Application.SetMute"; params = strdup("\"mute\": false"); }
-			else if (strcmp(action_string, "UP") == 0)	{ method = "Input.Up"; }
+			if (*listening == 0) {
+				if (strcmp(action_string, "LISTEN") == 0) { *listening = 1; time(&*start);}
+			}
+			else{
+				if (strcmp(action_string, "BACK") == 0)	{ method = "Input.Back"; }
+				else if (strcmp(action_string, "DOWN") == 0)	{ method = "Input.Down"; }
+				else if (strcmp(action_string, "HOME") == 0)	{ method = "Input.Home"; }
+				else if (strcmp(action_string, "LEFT") == 0)	{ method = "Input.Left"; }
+				else if (strcmp(action_string, "MUTE") == 0)	{ method = "Application.SetMute"; params = strdup("\"mute\": true"); }
+				else if (strcmp(action_string, "RIGHT") == 0)	{ method = "Input.Right"; }
+				else if (strcmp(action_string, "SELECT") == 0)	{ method = "Input.Select"; }
+				else if (strcmp(action_string, "UNMUTE") == 0)	{ method = "Application.SetMute"; params = strdup("\"mute\": false"); }
+				else if (strcmp(action_string, "UP") == 0)	{ method = "Input.Up"; }
 
-			/* Player actions are only valid when there is an active player */
-			else if (player_id)
-			{
+				/* Player actions are only valid when there is an active player */
+				else if (player_id)
+				{
 
-				/* Insert player ID into parameters syntax template */
-				params = "\"playerid\":%s";
-				params_fmt = strdup(params);
-				params = malloc(strlen(params_fmt) + strlen(player_id));
-				sprintf(params, params_fmt, player_id);
+					/* Insert player ID into parameters syntax template */
+					params = "\"playerid\":%s";
+					params_fmt = strdup(params);
+					params = malloc(strlen(params_fmt) + strlen(player_id));
+					sprintf(params, params_fmt, player_id);
 
-				/* Set method based on word */
-				     if (strcmp(action_string, "NEXT") == 0)	{ method = "Player.GoNext"; }
-				else if (strcmp(action_string, "PAUSE") == 0)	{ method = "Player.PlayPause"; }
-				else if (strcmp(action_string, "PLAY") == 0)	{ method = "Player.PlayPause"; }
-				else if (strcmp(action_string, "PREVIOUS") == 0){ method = "Player.GoPrevious"; }
-				else if (strcmp(action_string, "STOP") == 0)	{ method = "Player.Stop"; }
+					/* Set method based on word */
+					     if (strcmp(action_string, "NEXT") == 0)	{ method = "Player.GoNext"; }
+					else if (strcmp(action_string, "PAUSE") == 0)	{ method = "Player.PlayPause"; }
+					else if (strcmp(action_string, "PLAY") == 0)	{ method = "Player.PlayPause"; }
+					else if (strcmp(action_string, "PREVIOUS") == 0){ method = "Player.GoPrevious"; }
+					else if (strcmp(action_string, "STOP") == 0)	{ method = "Player.Stop"; }
 
+				}
 			}
 
 			/* If a known word was recognized, queue action */
@@ -239,6 +244,7 @@ perform_actions(const char *hyp)
 				queue_methods[j] = method;
 				queue_params[j] = params;
 				j++;
+				time(&*start);
 			}
 
 			free(action_string);
@@ -344,6 +350,8 @@ main(int argc, char *argv[])
 	int32		timestamp;
 	int32		result;
 	const char*	hyp;
+	time_t start;
+	int listening=0;
 
 	parse_options(argc, argv);
 
@@ -392,6 +400,7 @@ main(int argc, char *argv[])
 		/* Wait until we get any samples */
 		while ((k = cont_ad_read(cont, adbuf, 4096)) == 0)
 		{
+			if (difftime(time(NULL), start) >= 10) { listening = 0; }
 			if (usleep(100000) == -1)
 				break;
 		}
@@ -459,7 +468,7 @@ main(int argc, char *argv[])
 		/* Print hypothesis */
 		printf("Heard: \"%s\"\n", hyp);
 		/* Perform requested actions */
-		perform_actions(hyp);
+		perform_actions(hyp, &start, &listening);
 
 		/* Resume recording */
 		if (ad_start_rec(ad) < 0)
