@@ -4,6 +4,8 @@
  *
  * Copyright (C) Michal Kepien, 2012.
  *
+ * Modified by Spencer Julian.
+ *
  * The listening code is heavily based on the sample continous listening
 //
  * 
@@ -35,7 +37,7 @@
 #include <unistd.h>
 
 /* Constants */
-#define VERSION				"0.1"
+#define VERSION				"0.4"
 #define USAGE_MESSAGE			"\n" \
 					"Usage: xbmcvc [ -H host ] [ -P port ] [ -V ] [ -h ]\n" \
 					"\n" \
@@ -49,6 +51,7 @@
 					"\n"
 
 #define MAX_ACTIONS			5
+#define MAX_LISTEN_TIME    10 //In Seconds
 #define JSON_RPC_DEFAULT_HOST		"localhost"
 #define JSON_RPC_DEFAULT_PORT		8080
 #define JSON_RPC_DEFAULT_USER		""
@@ -57,6 +60,7 @@
 #define JSON_RPC_URL				"http://%s:%s/jsonrpc"
 #define JSON_RPC_POST			"{\"jsonrpc\":\"2.0\",\"method\":\"%s\",\"id\":1}"
 #define JSON_RPC_POST_WITH_PARAMS	"{\"jsonrpc\":\"2.0\",\"method\":\"%s\",\"params\":{%s},\"id\":1}"
+#define EVENTSERVER_URL			"http://%s:%s/xbmcCmds/xbmcHttp?command="
 
 /* Macros */
 #define DIE(message)			{ printf("Fatal error at %s:%d: %s\n", __FILE__, __LINE__, message); exit(1); }
@@ -155,6 +159,50 @@ send_json_rpc_request(const char *method, const char *params, char **dst)
 }
 
 void
+send_eventserver_request(const char *command, char **dst)
+{
+
+	CURL*		curl;
+	CURLcode	result;
+	char*		url;
+	char*		response = NULL;
+	curl_userdata_t	cud;
+
+	url = malloc(strlen(EVENTSERVER_URL) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port) + strlen(command));
+	sprintf(url, EVENTSERVER_URL, config_json_rpc_host, config_json_rpc_port);
+	strcat(url, command);
+
+	/* Initialize userdata structure passed to callback */
+	cud.dst = &response;
+	cud.dst_s = 0;
+
+	/* Initialize libcurl */
+	if ((curl = curl_easy_init()) == NULL)
+		DIE("Error initializing libcurl\n");
+
+	/* Set request options */
+	curl_easy_setopt(curl, CURLOPT_URL, url);
+	curl_easy_setopt(curl, CURLOPT_POST, 0);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_response_in_memory);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &cud);
+
+	/* Send HTTP request */
+	result = curl_easy_perform(curl);
+
+	/* If caller provided a pointer, save response there (if it exists) */
+	if (dst && response)
+	{
+		*dst = realloc(*dst, strlen(response) + 1);
+		strcpy(*dst, response);
+	}
+
+	/* Cleanup */
+	free(response);
+	free(url);
+	curl_easy_cleanup(curl);
+
+}
+void
 perform_actions(const char *hyp, time_t *start, int *listening)
 {
 
@@ -165,8 +213,10 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 	char*	action_string;
 	char*	method = NULL;
 	char*	params = NULL;
+	char* command = NULL;
 	char*	queue_methods[MAX_ACTIONS];
 	char*	queue_params[MAX_ACTIONS];
+	char* queue_commands[MAX_ACTIONS];
 	char*	response = NULL;
 	char*	player_id_offset = NULL;
 	char*	player_id = NULL;
@@ -181,7 +231,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 		printf("WARNING: JSON-RPC query not answered - is XBMC's webserver turned on?\n");
 		return;
 	}
-
+	
 	player_id_offset = strstr(response, "\"playerid\":");
 	if (player_id_offset)
 	{
@@ -196,6 +246,14 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 
 	/* Reset iterator */
 	i = 0;
+
+	response = NULL;
+	send_eventserver_request("SetResponseFormat()", &response);
+	if (!response)
+	{
+		printf("WARNING: HTTP Eventserver query not answered - is XBMC's webserver turned on?\n");
+		return;
+	}
 
 	/* Prepare action queue from words in hypothesis */
 	do { 
@@ -222,6 +280,13 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 				else if (strcmp(action_string, "SELECT") == 0)	{ method = "Input.Select"; }
 				else if (strcmp(action_string, "UNMUTE") == 0)	{ method = "Application.SetMute"; params = strdup("\"mute\": false"); }
 				else if (strcmp(action_string, "UP") == 0)	{ method = "Input.Up"; }
+				else if (strcmp(action_string, "MOVIES") == 0) { command = "ExecBuiltIn(ActivateWindow(Videos,MovieTitles))"; }
+				else if (strcmp(action_string, "TV") == 0) { command = "ExecBuiltIn(ActivateWindow(Videos,TVShowTitles))"; }
+				else if (strcmp(action_string, "MUSIC") == 0) { command = "ExecBuiltIn(ActivateWindow(Music))";}
+				else if (strcmp(action_string, "PICTURES") == 0) { command = "ExecBuiltIn(ActivateWindow(Pictures))";}
+				else if (strcmp(action_string, "WEATHER") == 0) { command = "ExecBuiltIn(ActivateWindow(Weather))";}
+				else if (strcmp(action_string, "SETTINGS") == 0) { command = "ExecBuiltIn(ActivateWindow(Settings))";}
+				else if (strcmp(action_string, "SHUTDOWN") == 0) { method = "System.Shutdown";}
 
 				/* Player actions are only valid when there is an active player */
 				else if (player_id)
@@ -244,10 +309,11 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 			}
 
 			/* If a known word was recognized, queue action */
-			if (method != NULL)
+			if (method != NULL || command != NULL)
 			{
 				queue_methods[j] = method;
 				queue_params[j] = params;
+				queue_commands[j] = command;
 				j++;
 				time(&*start);
 			}
@@ -261,7 +327,12 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 	/* Execute all actions from queue in 200ms intervals */
 	for (i=0; i<j; i++)
 	{
-		send_json_rpc_request(queue_methods[i], queue_params[i], NULL);
+		if (queue_methods[i] != NULL){
+			send_json_rpc_request(queue_methods[i], queue_params[i], NULL);
+		}
+		else if (queue_commands[i] != NULL) {
+			send_eventserver_request(queue_commands[i], NULL);
+		}
 		usleep(200000);
 	}
 
@@ -419,7 +490,7 @@ main(int argc, char *argv[])
 		/* Wait until we get any samples */
 		while ((k = cont_ad_read(cont, adbuf, 4096)) == 0)
 		{
-			if (difftime(time(NULL), start) >= 10) { listening = 0; }
+			if (difftime(time(NULL), start) >= MAX_LISTEN_TIME) { listening = 0; }
 			if (usleep(100000) == -1)
 				break;
 		}

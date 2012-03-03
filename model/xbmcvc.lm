@@ -10,9 +10,9 @@ The (fixed) discount mass is 0.5. The backoffs are computed using the ratio meth
 This model based on a corpus of 14 sentences and 16 words
 
 \data\
-ngram 1=17
-ngram 2=30
-ngram 3=15
+ngram 1=24
+ngram 2=44
+ngram 3=22
 
 \1-grams:
 -0.7782 </s> -0.3010
@@ -32,6 +32,13 @@ ngram 3=15
 -1.9243 UNMUTE -0.2218
 -1.9243 UP -0.2218
 -1.9243 LISTEN -0.2218
+-1.9243 MOVIES -0.2218
+-1.9243 TV -0.2218
+-1.9243 MUSIC -0.2218
+-1.9243 PICTURES -0.2218
+-1.9243 WEATHER -0.2218
+-1.9243 SETTINGS -0.2218
+-1.9243 SHUTDOWN -0.2218
 
 \2-grams:
 -1.4472 <s> BACK 0.0000
@@ -49,6 +56,13 @@ ngram 3=15
 -1.4472 <s> UNMUTE 0.0000
 -1.4472 <s> UP 0.0000
 -1.4472 <s> LISTEN 0.0000
+-1.4472 <s> MOVIES 0.0000
+-1.4472 <s> TV 0.0000
+-1.4472 <s> MUSIC 0.0000
+-1.4472 <s> PICTURES 0.0000
+-1.4472 <s> WEATHER 0.0000
+-1.4472 <s> SETTINGS 0.0000
+-1.4472 <s> SHUTDOWN 0.0000
 -0.3010 BACK </s> -0.3010
 -0.3010 DOWN </s> -0.3010
 -0.3010 HOME </s> -0.3010
@@ -64,6 +78,13 @@ ngram 3=15
 -0.3010 UNMUTE </s> -0.3010
 -0.3010 UP </s> -0.3010
 -0.3010 LISTEN </s> -0.3010
+-0.3010 MOVIES </s> -0.3010
+-0.3010 TV </s> -0.3010
+-0.3010 MUSIC </s> -0.3010
+-0.3010 PICTURES </s> -0.3010
+-0.3010 WEATHER </s> -0.3010
+-0.3010 SETTINGS </s> -0.3010
+-0.3010 SHUTDOWN </s> -0.3010
 
 \3-grams:
 -0.3010 <s> BACK </s>
@@ -81,5 +102,12 @@ ngram 3=15
 -0.3010 <s> UNMUTE </s>
 -0.3010 <s> UP </s>
 -0.3010 <s> LISTEN </s>
+-0.3010 <s> MOVIES </s>
+-0.3010 <s> TV </s>
+-0.3010 <s> MUSIC </s>
+-0.3010 <s> PICTURES </s>
+-0.3010 <s> WEATHER </s>
+-0.3010 <s> SETTINGS </s>
+-0.3010 <s> SHUTDOWN </s>
 
 \end\
