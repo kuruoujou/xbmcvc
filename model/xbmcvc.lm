@@ -10,9 +10,9 @@ The (fixed) discount mass is 0.5. The backoffs are computed using the ratio meth
 This model based on a corpus of 14 sentences and 16 words
 
 \data\
-ngram 1=24
-ngram 2=44
-ngram 3=22
+ngram 1=25
+ngram 2=46
+ngram 3=23
 
 \1-grams:
 -0.7782 </s> -0.3010
@@ -39,6 +39,7 @@ ngram 3=22
 -1.9243 WEATHER -0.2218
 -1.9243 SETTINGS -0.2218
 -1.9243 SHUTDOWN -0.2218
+-1.9243 DISPLAY -0.2218
 
 \2-grams:
 -1.4472 <s> BACK 0.0000
@@ -63,6 +64,7 @@ ngram 3=22
 -1.4472 <s> WEATHER 0.0000
 -1.4472 <s> SETTINGS 0.0000
 -1.4472 <s> SHUTDOWN 0.0000
+-1.4472 <s> DISPLAY 0.0000
 -0.3010 BACK </s> -0.3010
 -0.3010 DOWN </s> -0.3010
 -0.3010 HOME </s> -0.3010
@@ -85,6 +87,7 @@ ngram 3=22
 -0.3010 WEATHER </s> -0.3010
 -0.3010 SETTINGS </s> -0.3010
 -0.3010 SHUTDOWN </s> -0.3010
+-0.3010 DISPLAY </s> -0.3010
 
 \3-grams:
 -0.3010 <s> BACK </s>
@@ -109,5 +112,6 @@ ngram 3=22
 -0.3010 <s> WEATHER </s>
 -0.3010 <s> SETTINGS </s>
 -0.3010 <s> SHUTDOWN </s>
+-0.3010 <s> DISPLAY </s>
 
 \end\

@@ -220,6 +220,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 	char*	response = NULL;
 	char*	player_id_offset = NULL;
 	char*	player_id = NULL;
+	char* player_type = NULL;
 	char*	params_fmt = NULL;
 
 	/* Get player ID via JSON-RPC */
@@ -242,6 +243,8 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 			i++;
 		/* Insert null byte after last digit to get a string containing player ID */
 		*(player_id + i) = '\0';
+		player_type = strdup(strstr(response, "\"type\":") + 8);
+		player_type[strlen(player_type) - 4] = '\0';
 	}
 
 	/* Reset iterator */
@@ -304,7 +307,10 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 					else if (strcmp(action_string, "PLAY") == 0)	{ method = "Player.PlayPause"; }
 					else if (strcmp(action_string, "PREVIOUS") == 0){ method = "Player.GoPrevious"; }
 					else if (strcmp(action_string, "STOP") == 0)	{ method = "Player.Stop"; }
-
+					else if (strcmp(action_string, "DISPLAY") == 0) {
+						     if (!strcmp(player_type,"audio")) { command = "ExecBuiltIn(ActivateWindow(visualisation))"; }
+						else if (!strcmp(player_type,"video")) { command = "ExecBuiltIn(ActivateWindow(fullscreenvideo))"; }
+					}
 				}
 			}
 
@@ -340,6 +346,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 	free(params_fmt);
 	free(params);
 	free(player_id);
+	free(player_type);
 	free(response);
 
 }
