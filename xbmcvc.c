@@ -307,6 +307,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 					else if (strcmp(action_string, "PLAY") == 0)	{ method = "Player.PlayPause"; }
 					else if (strcmp(action_string, "PREVIOUS") == 0){ method = "Player.GoPrevious"; }
 					else if (strcmp(action_string, "STOP") == 0)	{ method = "Player.Stop"; }
+					else if (strcmp(action_string, "INFO") == 0) { method = "SendKey(0xF049)"; } //Sends the character "I", which displays info onscreen
 					else if (strcmp(action_string, "DISPLAY") == 0) {
 						     if (!strcmp(player_type,"audio")) { command = "ExecBuiltIn(ActivateWindow(visualisation))"; }
 						else if (!strcmp(player_type,"video")) { command = "ExecBuiltIn(ActivateWindow(fullscreenvideo))"; }
