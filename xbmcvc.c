@@ -159,7 +159,7 @@ send_json_rpc_request(const char *method, const char *params, char **dst)
 }
 
 void
-send_eventserver_request(const char *command, char **dst)
+send_http_request(const char *command, char **dst)
 {
 
 	CURL*		curl;
@@ -195,7 +195,7 @@ send_eventserver_request(const char *command, char **dst)
 		*dst = realloc(*dst, strlen(response) + 1);
 		strcpy(*dst, response);
 	}
-
+	
 	/* Cleanup */
 	free(response);
 	free(url);
@@ -251,10 +251,10 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 	i = 0;
 
 	response = NULL;
-	send_eventserver_request("SetResponseFormat()", &response);
+	send_http_request("SetResponseFormat()", &response);
 	if (!response)
 	{
-		printf("WARNING: HTTP Eventserver query not answered - is XBMC's webserver turned on?\n");
+		printf("WARNING: HTTP query not answered - is XBMC's webserver turned on?\n");
 		return;
 	}
 
@@ -307,7 +307,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 					else if (strcmp(action_string, "PLAY") == 0)	{ method = "Player.PlayPause"; }
 					else if (strcmp(action_string, "PREVIOUS") == 0){ method = "Player.GoPrevious"; }
 					else if (strcmp(action_string, "STOP") == 0)	{ method = "Player.Stop"; }
-					else if (strcmp(action_string, "INFO") == 0) { method = "SendKey(0xF049)"; } //Sends the character "I", which displays info onscreen
+					else if (strcmp(action_string, "INFO") == 0) { command = "SendKey(0xF049)"; } //Sends the character "I", which displays info onscreen
 					else if (strcmp(action_string, "DISPLAY") == 0) {
 						     if (!strcmp(player_type,"audio")) { command = "ExecBuiltIn(ActivateWindow(visualisation))"; }
 						else if (!strcmp(player_type,"video")) { command = "ExecBuiltIn(ActivateWindow(fullscreenvideo))"; }
@@ -338,7 +338,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 			send_json_rpc_request(queue_methods[i], queue_params[i], NULL);
 		}
 		else if (queue_commands[i] != NULL) {
-			send_eventserver_request(queue_commands[i], NULL);
+			send_http_request(queue_commands[i], NULL);
 		}
 		usleep(200000);
 	}
