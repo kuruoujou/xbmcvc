@@ -54,13 +54,12 @@
 #define MAX_LISTEN_TIME    10 //In Seconds
 #define JSON_RPC_DEFAULT_HOST		"localhost"
 #define JSON_RPC_DEFAULT_PORT		8080
-#define JSON_RPC_DEFAULT_USER		""
-#define JSON_RPC_DEFAULT_PASS		""
-//#define JSON_RPC_URL			"http://%s:%s@%s:%s/jsonrpc"
+#define JSON_RPC_USER_URL			"http://%s:%s@%s:%s/jsonrpc"
 #define JSON_RPC_URL				"http://%s:%s/jsonrpc"
 #define JSON_RPC_POST			"{\"jsonrpc\":\"2.0\",\"method\":\"%s\",\"id\":1}"
 #define JSON_RPC_POST_WITH_PARAMS	"{\"jsonrpc\":\"2.0\",\"method\":\"%s\",\"params\":{%s},\"id\":1}"
 #define EVENTSERVER_URL			"http://%s:%s/xbmcCmds/xbmcHttp?command="
+#define EVENTSERVER_USER_URL  "http://%s:%s@%s:%s/xbmcCmds/xbmcHttp?command="
 
 /* Macros */
 #define DIE(message)			{ printf("Fatal error at %s:%d: %s\n", __FILE__, __LINE__, message); exit(1); }
@@ -72,8 +71,8 @@ typedef struct {
 } curl_userdata_t;
 
 /* Global configuration variables */
-//char* config_json_rpc_user;
-//char* config_json_rpc_pass;
+char* config_json_rpc_user;
+char* config_json_rpc_pass;
 char* config_json_rpc_host;
 char* config_json_rpc_port;
 char* config_alsa_device;
@@ -107,11 +106,14 @@ send_json_rpc_request(const char *method, const char *params, char **dst)
 	curl_userdata_t	cud;
 
 	/* Prepare JSON-RPC URL  */
-	//url = malloc(strlen(JSON_RPC_URL) + strlen(config_json_rpc_user) + strlen(config_json_rpc_pass) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port));
-//	sprintf(url, JSON_RPC_URL, config_json_rpc_user, config_json_rpc_pass, config_json_rpc_host, config_json_rpc_port);
-
-	url = malloc(strlen(JSON_RPC_URL) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port));
-	sprintf(url, JSON_RPC_URL, config_json_rpc_host, config_json_rpc_port);
+	if(config_json_rpc_user != NULL || config_json_rpc_pass != NULL){
+		url = malloc(strlen(JSON_RPC_USER_URL) + strlen(config_json_rpc_user) + strlen(config_json_rpc_pass) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port));
+		sprintf(url, JSON_RPC_USER_URL, config_json_rpc_user, config_json_rpc_pass, config_json_rpc_host, config_json_rpc_port);
+	}
+	else{
+		url = malloc(strlen(JSON_RPC_URL) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port));
+		sprintf(url, JSON_RPC_URL, config_json_rpc_host, config_json_rpc_port);
+	}
 
 	/* Prepare POST data with or without parameters */
 	if (params == NULL)
@@ -168,9 +170,16 @@ send_http_request(const char *command, char **dst)
 	char*		response = NULL;
 	curl_userdata_t	cud;
 
-	url = malloc(strlen(EVENTSERVER_URL) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port) + strlen(command));
-	sprintf(url, EVENTSERVER_URL, config_json_rpc_host, config_json_rpc_port);
-	strcat(url, command);
+	if(config_json_rpc_user != NULL || config_json_rpc_pass != NULL){
+		url = malloc(strlen(EVENTSERVER_USER_URL) + strlen(config_json_rpc_user) + strlen(config_json_rpc_pass) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port) + strlen(command));
+		sprintf(url, EVENTSERVER_USER_URL, config_json_rpc_user, config_json_rpc_pass, config_json_rpc_host, config_json_rpc_port);
+		strcat(url, command);
+	}
+	else{
+		url = malloc(strlen(EVENTSERVER_URL) + strlen(config_json_rpc_host) + strlen(config_json_rpc_port) + strlen(command));
+		sprintf(url, EVENTSERVER_URL, config_json_rpc_host, config_json_rpc_port);
+		strcat(url, command);
+	}
 
 	/* Initialize userdata structure passed to callback */
 	cud.dst = &response;
@@ -366,11 +375,9 @@ parse_options(int argc, char *argv[])
 
 	sprintf(config_json_rpc_host, "%s", JSON_RPC_DEFAULT_HOST);
 	snprintf(config_json_rpc_port, 6, "%d", JSON_RPC_DEFAULT_PORT);
-	//sprintf(config_json_rpc_user, "%s", JSON_RPC_DEFAULT_USER);
-	//sprintf(config_json_rpc_pass, "%s", JSON_RPC_DEFAULT_PASS);
 
 	/* Process command line options */
-	while ((option = getopt(argc, argv, "H:P:D:Vh")) != -1 && !quit)
+	while ((option = getopt(argc, argv, "H:P:U:p:D:Vh")) != -1 && !quit)
 	{
 		switch(option)
 		{
@@ -387,16 +394,16 @@ parse_options(int argc, char *argv[])
 				break;
 
 			/* XBMC user */
-	//		case 'U':
-	//			config_json_rpc_user = realloc(config_json_rpc_user, strlen(optarg) + 1);
-	//			sprintf(config_json_rpc_user, "%s", optarg);
-	//			break;
+			case 'U':
+				config_json_rpc_user = realloc(config_json_rpc_user, strlen(optarg) + 1);
+				sprintf(config_json_rpc_user, "%s", optarg);
+				break;
 
 			/* XBMC pass */
-	//		case 'p':
-	//			config_json_rpc_pass = realloc(config_json_rpc_pass, strlen(optarg) +1);
-	//			sprintf(config_json_rpc_pass, "%s", optarg);
-	//			break;
+			case 'p':
+				config_json_rpc_pass = realloc(config_json_rpc_pass, strlen(optarg) +1);
+				sprintf(config_json_rpc_pass, "%s", optarg);
+				break;
 
 			/* ALSA capture device */
 			case 'D':
@@ -424,6 +431,8 @@ parse_options(int argc, char *argv[])
 		free(config_json_rpc_host);
 		free(config_json_rpc_port);
 		free(config_alsa_device);
+		free(config_json_rpc_user);
+		free(config_json_rpc_pass);
 		exit(0);
 	}
 

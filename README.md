@@ -45,7 +45,7 @@ Caveats
 
 To avoid confusion, _xbmcvc_ will perform a maximum of 5 actions at a time. You can say more voice commands than that, but only the first five recognized commands will be executed.
 
-If you are trying to control an XBMC instance installed on a different machine than the one you're running _xbmcvc_ on (or your XBMC listens on a non-standard port), make sure you pass the correct hostname and port number to _xbmcvc_ via its __-H__ and __-P__ command line switches, respectively.
+If you are trying to control an XBMC instance installed on a different machine than the one you're running _xbmcvc_ on (or your XBMC listens on a non-standard port), make sure you pass the correct hostname and port number to _xbmcvc_ via its __-H__ and __-P__ command line switches, respectively. If you have a username and password set up on the machine, pass the correct username and password with the __-U__ and __-p__ command line switches.
 
 If capturing from the default ALSA device doesn't work for you, you can specify the ALSA device you want to capture speech from using the __-D__ command line switch.
 
