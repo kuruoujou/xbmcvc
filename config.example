@@ -1,0 +1,102 @@
+# This is an example config file.
+# At this point, it's only what I expect the config to look like.
+# Configuration isn't yet supported by xbmcvc.
+#
+# These are comments. Should be straightforward.
+
+#The following is a section.
+[xbmc]
+#This section contains the configuration settings for XBMC,
+#Along with the ALSA device. Basically, it's a section for
+#overriding default xbmcvc settings without using command line
+#switches. CLI switches override this file.
+#Leave this section blank to initialize defaults, which are mentioned
+#above the relevant line.
+
+#Hostname defaults to localhost.
+HOSTNAME=localhost
+
+#Port defaults to 8080.
+PORT=8080
+
+#Username defaults to none. Inclusion of this line, even blank, assumes otherwise.
+USERNAME=username
+
+#Password is the same as username.
+PASSWORD=password
+
+#Device defaults to default ALSA device. Inclusion of this line, even blank, assumes otherwise.
+DEVICE=AlsaDevice
+
+[listen]
+# This section contains a single statement - the listen directive.
+# It will be the word that is listened for to start listening.
+
+LISTEN=%listen%
+
+# The % symbols indicate an xbmcvc-specific directive, that will not
+# be sent to xbmc directly. Right now, only %listen% will be supported.
+#
+# This section is very redundant, but at least it keeps consistency.
+
+[player]
+# These are commands that will only activate while
+# a player is running. They do not care what kind
+# of player.
+
+NEXT={Player.GoNext}
+# The braces indicate and JSON-RPC command. Note that they are not
+# the fully constructed JSON command, just the method. See the
+# 'always' section for examples of JSON commands that have params.
+
+PAUSE={Player.PlayPause}
+PLAY={Player.PlayPause}
+PREVIOUS={Player.GoPrevious}
+STOP={Player.Stop}
+
+INFO=SendKey(0xF049)
+# A lack of braces indicates an HTTP Web server command.
+# When this is eventually switched to the event server,
+# a lack of braces will probably indicate an event server command,
+# or perhaps I will add an additional sytatical thing, like parens.
+# That way we can have backwards compatibility with previous versions
+# of xbmcvc...should anyone be using it yet (unlikely).
+
+[video]
+# These are commands that will only activate while a
+# video player is running.
+DISPLAY=ExecBuiltIn(ActivateWindow(visualization))
+
+[audio]
+# These are commands that will only activate while an
+# audio player is running.
+# (What to do if they are identical to video commands?
+# How do we map them in code? Or will switching to 
+# eventserver make this moot?)
+DISPLAY=ExecBuiltIn(ActivateWindow(fullscreenvideo))
+
+[always]
+# These are commands that will always be run,
+# regardless of what is running.
+BACK={Input.Back}
+DOWN={Input.Down}
+HOME={Input.Home}
+LEFT={Input.Left}
+
+MUTE={Application.SetMute,mute:true}
+#When you need to run a JSON command that has params,
+#simply seperate the method and each param with a comma,
+#and the param and value with a colon.
+#For example, ITEM={method,param1:value1,param2:value2,param3:value3}
+
+UNMUTE={Application.SetMute,mute:false}
+UP={Input.Up}
+MOVIES=ExecBuiltIn(ActivateWindow(Videos,MovieTitles))
+TV=ExecBuiltIn(ActivateWindow(Videos,TVShowTitles))
+MUSIC=ExecBuiltIn(ActivateWindow(Music))
+PICTURES=ExecBuiltIn(ActivateWindow(Pictures))
+WEATHER=ExecBuiltIn(ActivateWindow(Weather))
+SETTINGS=ExecBuiltIn(ActivateWindow(Settings))
+SHUTDOWN={System.Shutdown}
+
+
