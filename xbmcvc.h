@@ -18,7 +18,7 @@
                "\n"
 
 #define MAX_ACTIONS        5
-#define MAX_LISTEN_TIME    10 //In Seconds
+#define MAX_LISTEN_TIME    3 //In Seconds
 #define JSON_RPC_DEFAULT_HOST    "localhost"
 #define JSON_RPC_DEFAULT_PORT    8080
 #define JSON_RPC_USER_URL        "http://%s:%s@%s:%s/jsonrpc"
