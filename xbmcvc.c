@@ -238,7 +238,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 
 			/* Set method and parameters based on word */
 			if (*listening == 0) {
-				if (strcmp(action_string, "LISTEN") == 0) { *listening = 1; time(&*start);}
+				if (strcmp(action_string, "LISTEN") == 0) { *listening = 1; *start = time(NULL);}
 			}
 			else{
 				if (strcmp(action_string, "BACK") == 0)	{ method = "Input.Back"; }
