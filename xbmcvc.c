@@ -417,10 +417,10 @@ main(int argc, char *argv[])
 	const char*	hyp;
 	time_t start;
 	int listening=0;
-	//string *section, *vocab, *command;
+	string *section, *vocab, *command;
 
 	parse_options(argc, argv);
-	//parseFile("config", section, vocab, command);
+	parseFile("config", section, vocab, command);
 
 	printf("Initializing, please wait...\n");
 
