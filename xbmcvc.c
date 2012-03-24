@@ -320,7 +320,7 @@ perform_actions(const char *hyp, time_t *start, int *listening)
 }
 
 void
-parse_options(int argc, char *argv[])
+parse_options(int argc, char *argv[], vocabulary *config)
 {
 
 	int option;
@@ -333,6 +333,8 @@ parse_options(int argc, char *argv[])
 
 	sprintf(config_json_rpc_host, "%s", JSON_RPC_DEFAULT_HOST);
 	snprintf(config_json_rpc_port, 6, "%d", JSON_RPC_DEFAULT_PORT);
+
+	generalConfig(config);
 
 	/* Process command line options */
 	while ((option = getopt(argc, argv, "H:P:U:p:D:Vh")) != -1 && !quit)
@@ -417,10 +419,10 @@ main(int argc, char *argv[])
 	const char*	hyp;
 	time_t start;
 	int listening=0;
+	vocabulary *vocabList;
 
-	parse_options(argc, argv);
-	parseFile("config");
-
+	vocabList = parseFile("config");
+	parse_options(argc, argv, vocabList);
 	printf("Initializing, please wait...\n");
 
 	/* Suppress verbose messages from pocketsphinx */

@@ -14,7 +14,7 @@ struct vocabList {
 
 typedef struct vocabList vocabulary;
 
-void parseFile(string filename)
+vocabulary* parseFile(string filename)
 {
 	FILE *config;
 	string line, curSection;
@@ -24,6 +24,7 @@ void parseFile(string filename)
 	config=fopen(filename, "r");
 	if (config != NULL) {
 		line = malloc(MAX_LINE_LENGTH);
+		curSection = malloc(MAX_LINE_LENGTH);
 		while(fgets(line, MAX_LINE_LENGTH, config) != NULL)
 		{
 			linenum++;
@@ -32,20 +33,48 @@ void parseFile(string filename)
 			else if(line[0] == '['){
 					line++;
 					line[strlen(line)-2] = 0;
-					curSection = strdup(line);
+					strcpy(curSection, line);
 			}
 			else {
-					current = (vocabulary *)malloc(sizeof(vocabulary));
-					current->section = curSection;
-					current->vocab = strtok(line,"=");
-					current->command = strtok(NULL, "=");
+					current = (vocabulary *)malloc(sizeof(vocabulary) + strlen(curSection) + strlen(line)-2);
+					current->section = strdup(curSection);
+					current->vocab = strdup(strtok(line,"="));
+					current->command = strdup(strtok(NULL, "=\n"));
 					current->next = head;
 					head = current;
 			}
 		}
 		fclose(config);
+		return head;
 	}
 	else{	
 		DIE("Configuration File Not Found");
 	}
+}
+
+void generalConfig(vocabulary* config)
+{
+		while(config)
+		{
+			if(!strcmp(config->vocab,"HOSTNAME")){
+  	         	config_json_rpc_host = realloc(config_json_rpc_host, strlen(config->command) + 1);
+	            sprintf(config_json_rpc_host, "%s", config->command);
+			}
+			else if (!strcmp(config->vocab, "PORT")){
+					snprintf(config_json_rpc_port, 6, "%s", config->command);
+			}
+			else if (!strcmp(config->vocab, "USERNAME")){
+      	      config_json_rpc_user = realloc(config_json_rpc_user, strlen(config->command) + 1);
+         	   sprintf(config_json_rpc_user, "%s", config->command);
+			}
+			else if (!strcmp(config->vocab, "PASSWORD")){
+      	      config_json_rpc_pass = realloc(config_json_rpc_pass, strlen(config->command) +1);
+         	   sprintf(config_json_rpc_pass, "%s", config->command);
+			}
+			else if (!strcmp(config->vocab, "DEVICE")){
+      	      config_alsa_device = realloc(config_alsa_device, strlen(config->command) + 1);
+         	   sprintf(config_alsa_device, "%s", config->command);
+			}
+			config = config->next;
+		}
 }
